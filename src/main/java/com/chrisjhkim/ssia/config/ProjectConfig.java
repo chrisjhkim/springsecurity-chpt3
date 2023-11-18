@@ -13,7 +13,13 @@ import javax.sql.DataSource;
 public class ProjectConfig {
 	@Bean
 	public UserDetailsService userDetailsService(DataSource dataSource){
-		return new JdbcUserDetailsManager(dataSource);
+		String usersByUsernameQuery = "SELECT username, password, enabled FROM users WHERE username = ? ";
+		String authoritiesByUsernameQuery = "SELECT username, authority FROM authorities WHERE username = ? ";
+
+		var userDetailManager = new JdbcUserDetailsManager(dataSource);
+		userDetailManager.setUsersByUsernameQuery(usersByUsernameQuery);
+		userDetailManager.setAuthoritiesByUsernameQuery(authoritiesByUsernameQuery);
+		return userDetailManager;
 	}
 
 
