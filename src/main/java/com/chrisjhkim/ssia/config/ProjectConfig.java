@@ -1,14 +1,20 @@
 package com.chrisjhkim.ssia.config;
 
-import com.chrisjhkim.ssia.encoder.PlainTextPasswordEncoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.scrypt.SCryptPasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 
 import javax.sql.DataSource;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 public class ProjectConfig {
@@ -23,10 +29,22 @@ public class ProjectConfig {
 		return userDetailManager;
 	}
 
-
-	@SuppressWarnings("deprecation") // 학습 목적
 	@Bean
-	public PasswordEncoder passwordEncoder(){
-		return new PlainTextPasswordEncoder();
+	public PasswordEncoder passwordEncoder() throws NoSuchAlgorithmException {
+		Map<String, PasswordEncoder> encoders = new HashMap<>();
+		encoders.put("noop", NoOpPasswordEncoder.getInstance());
+
+		// BCryptPasswordEncoder 옵션 가능
+		encoders.put("bcrypt", new BCryptPasswordEncoder());
+//		encoders.put("bcrypt", new BCryptPasswordEncoder(4));
+//		SecureRandom s = SecureRandom.getInstanceStrong();
+//		encoders.put("bcrypt", new BCryptPasswordEncoder(4, s));
+
+
+		// SCryptPasswordEncoder 옵션 가능
+		encoders.put("scrypt", new SCryptPasswordEncoder());
+//		encoders.put("scrypt", new SCryptPasswordEncoder(16384,8,1,32,64));
+
+		return new DelegatingPasswordEncoder("bcrypt", encoders);
 	}
 }
